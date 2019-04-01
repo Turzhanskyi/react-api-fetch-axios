@@ -1,51 +1,64 @@
 import React, { Component } from 'react';
+import axios from 'axios';
 
 class App extends React.Component {
-  state = {
-    isLoading: true,
-    users: [],
-    error: null
-  };
+    state = {
+        users: [],
+        isLoading: true,
+        errors: null
+    };
 
-  fetchUsers() {
-    fetch(`https://jsonplaceholder.typicode.com/users`)
-        .then(response => response.json())
-        .then(data =>
-            this.setState({
-              users: data,
-              isLoading: false,
+    getUsers() {
+        axios
+            .get("https://randomuser.me/api/?results=5")
+            .then(response =>
+                response.data.results.map(user => ({
+                    name: `${user.name.first} ${user.name.last}`,
+                    username: `${user.login.username}`,
+                    email: `${user.email}`,
+                    image: `${user.picture.thumbnail}`
+                }))
+            )
+            .then(users => {
+                this.setState({
+                    users,
+                    isLoading: false
+                });
             })
-        )
-        .catch(error => this.setState({ error, isLoading: false }));
-  }
+            .catch(error => this.setState({ error, isLoading: false }));
+    }
 
-  componentDidMount() {
-    this.fetchUsers();
-  }
-  render() {
-    const { isLoading, users, error } = this.state;
-    return (
-        <React.Fragment>
-          <h1>Random User</h1>
-          {error ? <p>{error.message}</p> : null}
-          {!isLoading ? (
-              users.map(user => {
-                const { username, name, email, phone } = user;
-                return (
-                    <div key={username}>
-                      <p>Name: {name}</p>
-                      <p>Email Address: {email}</p>
-                      <p>Phone: {phone}</p>
-                      <hr />
-                    </div>
-                );
-              })
-          ) : (
-              <h3>Loading...</h3>
-          )}
-        </React.Fragment>
-    );
-  }
+    componentDidMount() {
+        this.getUsers();
+    }
+
+    render() {
+        const { isLoading, users } = this.state;
+        return (
+            <React.Fragment>
+                <h2>Random User</h2>
+                <div>
+                    {!isLoading ? (
+                        users.map(user => {
+                            const { username, name, email, image } = user;
+                            return (
+                                <div key={username}>
+                                    <p>{name}</p>
+                                    <div>
+                                        <img src={image} alt={name} />
+                                    </div>
+                                    <p>{email}</p>
+                                    <hr />
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <p>Loading...</p>
+                    )}
+                </div>
+            </React.Fragment>
+        );
+    }
 }
 
 export default App;
